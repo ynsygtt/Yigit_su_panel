@@ -8,5 +8,3 @@ export { default as Sidebar } from './shared/Sidebar';
 // Feature Components
 export { default as ProductCard } from './ProductCard';
 export { default as CustomerRow } from './CustomerRow';
-export { default as ProductCard } from './ProductCard';
-export { default as CustomerRow } from './CustomerRow';

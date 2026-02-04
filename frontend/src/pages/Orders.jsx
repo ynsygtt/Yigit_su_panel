@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
-  Plus, Trash2, Edit, FileDown, Printer, Search, X, 
+  Plus, Trash2, Edit, FileDown, Search, X, 
   ShoppingCart, Truck, CheckCircle, Clock, AlertCircle,
   RotateCcw, ChevronRight, Tag, Banknote, Filter
 } from 'lucide-react';
-import { useToast } from '../hooks/useToast';
-import { useConfirmation } from '../hooks/useConfirmation';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { formatCurrencyForExcel, formatDateForExcel } from '../utils/excelExporter';
 import { generateSectionedExcel, addSummarySection, addFilterInfo } from '../utils/excelTemplates';
@@ -48,7 +46,7 @@ const Orders = () => {
   const [serverTimezoneOffsetMinutes, setServerTimezoneOffsetMinutes] = useState(null);
   const debouncedCustomerSearch = useDebouncedValue(customerSearch, 300);
 
-  const fetchData = async (page = 1, append = false) => {
+  const fetchData = useCallback(async (page = 1, append = false) => {
     setIsLoading(true);
     try {
       const [ordRes, prodRes, custRes] = await Promise.all([
@@ -69,8 +67,8 @@ const Orders = () => {
         setOrdersHasMore(orderList.length >= ordersLimit);
       }
     } catch (err) { console.error(err); } finally { setIsLoading(false); }
-  };
-  useEffect(() => { fetchData(1, false); }, []);
+  }, [ordersLimit]);
+  useEffect(() => { fetchData(1, false); }, [fetchData]);
 
   useEffect(() => {
     const initServerTime = async () => {
@@ -181,7 +179,7 @@ const Orders = () => {
 
     scheduleMidnightReset();
     return () => clearTimeout(timerId);
-  }, [serverOffsetMs]);
+  }, [serverOffsetMs, fetchData]);
 
   useEffect(() => {
       if (selectedProduct) {
@@ -319,7 +317,6 @@ const Orders = () => {
         <div><h1 className="text-3xl font-bold">Sipariş Yönetimi</h1></div>
         <div className="flex gap-2">
           <button onClick={handleExportOrdersToExcel} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><FileDown size={20}/> Excel İndir</button>
-          <button onClick={() => window.print()} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Printer size={20}/> Yazdır</button>
           <div className="flex items-center gap-2 bg-gray-800 p-1.5 rounded-lg border border-gray-700">
             <input type="date" className="bg-gray-700 text-white text-sm px-2 py-1.5 rounded outline-none border border-gray-600" value={startDate} onChange={(e)=>setStartDate(e.target.value)} />
             <span className="text-gray-400">-</span>

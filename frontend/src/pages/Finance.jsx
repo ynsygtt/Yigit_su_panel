@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Plus, Printer, FileDown, Wallet, Filter, TrendingUp, TrendingDown, CreditCard, Tag, DollarSign, Edit2, Trash2 } from 'lucide-react';
+import { Plus, FileDown, Wallet, Filter, TrendingUp, TrendingDown, CreditCard, Tag, DollarSign, Edit2, Trash2 } from 'lucide-react';
 import { LoadingSpinner, Toast, PrintHeader, ConfirmationModal } from '../components/shared';
 import { API_URL } from '../config';
 import { formatCurrencyForExcel, formatDateForExcel } from '../utils/excelExporter';
@@ -47,12 +47,10 @@ const Finance = () => {
 
     const showToastMessage = (message, type) => setToast({ message, type });
 
-    const fetchStats = async (dateRange = {}) => {
+    const fetchStats = useCallback(async ({ startDate: rangeStart, endDate: rangeEnd, category } = {}) => {
         setIsLoading(true);
         try { 
-            let url = `${API_URL}/api/finance/stats?category=${categoryFilter}`;
-            const rangeStart = dateRange.startDate || startDate;
-            const rangeEnd = dateRange.endDate || endDate;
+            let url = `${API_URL}/api/finance/stats?category=${category}`;
             if (rangeStart && rangeEnd) { url += `&startDate=${rangeStart}&endDate=${rangeEnd}`; }
             const res = await axios.get(url); 
             setStats(res.data); 
@@ -61,9 +59,9 @@ const Finance = () => {
         } finally { 
             setIsLoading(false); 
         }
-    };
+    }, []);
     
-        useEffect(() => { fetchStats(); }, [categoryFilter]);
+        useEffect(() => { fetchStats({ startDate, endDate, category: categoryFilter }); }, [fetchStats, startDate, endDate, categoryFilter]);
 
         useEffect(() => {
             const initServerTime = async () => {
@@ -76,14 +74,14 @@ const Finance = () => {
                     const serverDate = res.data.date || getLocalDateString(serverNow);
                     setStartDate(serverDate);
                     setEndDate(serverDate);
-                    fetchStats({ startDate: serverDate, endDate: serverDate });
+                    fetchStats({ startDate: serverDate, endDate: serverDate, category: 'all' });
                 } catch (err) {
                     console.error(err);
                 }
             };
 
             initServerTime();
-        }, []);
+        }, [fetchStats]);
 
         useEffect(() => {
             let timerId;
@@ -97,14 +95,14 @@ const Finance = () => {
                     const today = getLocalDateString(nowServer);
                     setStartDate(today);
                     setEndDate(today);
-                    fetchStats({ startDate: today, endDate: today });
+                    fetchStats({ startDate: today, endDate: today, category: categoryFilter });
                     scheduleMidnightReset();
                 }, msUntilMidnight + 50);
             };
 
             scheduleMidnightReset();
             return () => clearTimeout(timerId);
-        }, [serverOffsetMs]);
+        }, [serverOffsetMs, categoryFilter, fetchStats]);
 
         useEffect(() => {
             let timerId;
@@ -117,21 +115,21 @@ const Finance = () => {
                     const today = getLocalDateString();
                     setStartDate(today);
                     setEndDate(today);
-                    fetchStats({ startDate: today, endDate: today });
+                    fetchStats({ startDate: today, endDate: today, category: categoryFilter });
                     scheduleMidnightReset();
                 }, msUntilMidnight + 50);
             };
 
             scheduleMidnightReset();
             return () => clearTimeout(timerId);
-        }, []);
+        }, [categoryFilter, fetchStats]);
 
     const handleFilter = () => { 
         if (!startDate || !endDate) { showToastMessage("Lütfen başlangıç ve bitiş tarihlerini seçiniz.", "error"); return; }
         const start = new Date(startDate);
         const end = new Date(endDate);
         if (start > end) { showToastMessage("Başlangıç tarihi bitiş tarihinden sonra olamaz.", "error"); return; }
-        fetchStats(); 
+        fetchStats({ startDate, endDate, category: categoryFilter }); 
     };
     
     const handleAddExpense = async () => {
@@ -142,7 +140,7 @@ const Finance = () => {
             await axios.post(`${API_URL}/api/expenses`, { ...newExpense, title }); 
             setShowExpenseModal(false); 
             setNewExpense({ title: '', amount: '', category: 'Genel' }); 
-            fetchStats(); 
+            fetchStats({ startDate, endDate, category: categoryFilter }); 
             showToastMessage("Gider ekleme başarılı", 'success'); 
         } catch(err) { 
             showToastMessage(err.response?.data?.error || "Gider ekleme başarısız", 'error'); 
@@ -197,7 +195,7 @@ const Finance = () => {
                 });
             }
             closeEditModal();
-            fetchStats();
+            fetchStats({ startDate, endDate, category: categoryFilter });
             showToastMessage('İşlem güncellendi', 'success');
         } catch (err) {
             showToastMessage(err.response?.data?.error || 'İşlem güncellenemedi', 'error');
@@ -216,7 +214,7 @@ const Finance = () => {
                 await axios.delete(`${API_URL}/api/debts/manual/${t.sourceId}`);
             }
             setDeleteModal({ show: false, transaction: null });
-            fetchStats();
+            fetchStats({ startDate, endDate, category: categoryFilter });
             showToastMessage('İşlem silindi', 'success');
         } catch (err) {
             showToastMessage(err.response?.data?.error || 'İşlem silinemedi', 'error');
@@ -288,7 +286,6 @@ const Finance = () => {
                 <h1 className="text-3xl font-bold flex items-center gap-3"><Wallet className="text-blue-400"/> Finansal Durum</h1>
                 <div className="flex items-center gap-2">
                 <button onClick={handleExportFinanceToExcel} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 h-[42px] font-medium"><FileDown size={20}/> Excel İndir</button>
-                    <button onClick={() => window.print()} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 h-[42px] font-medium"><Printer size={20}/> Yazdır</button>
                     <div className="flex items-center gap-4 bg-gray-800 p-2 rounded-lg border border-gray-700">
                         <div className="flex items-center gap-2"><input type="date" className="bg-gray-700 text-white text-sm px-2 py-1.5 rounded outline-none border border-gray-600 focus:border-blue-500" value={startDate} onChange={(e)=>setStartDate(e.target.value)} /><span className="text-gray-400">-</span><input type="date" className="bg-gray-700 text-white text-sm px-2 py-1.5 rounded outline-none border border-gray-600 focus:border-blue-500" value={endDate} onChange={(e)=>setEndDate(e.target.value)} /><div className="w-px h-8 bg-gray-600 mx-2"></div><select className="bg-gray-700 text-white text-sm px-2 py-1.5 rounded outline-none border border-gray-600 focus:border-blue-500" value={categoryFilter} onChange={(e)=>setCategoryFilter(e.target.value)}><option value="all">Tüm Kategoriler</option><option value="Sipariş Gelirleri">Sipariş Gelirleri (+)</option><option value="Borç Tahsilatları">Borç Tahsilatları (+)</option><option value="Toplu Satış Geliri">Toplu Satış Geliri (+)</option>{EXPENSE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat} (-)</option>)}</select><button onClick={handleFilter} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold ml-2">Filtrele</button></div>
                     </div>

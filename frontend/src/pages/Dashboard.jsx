@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Package, CreditCard, TrendingUp, TrendingDown, FileDown, Printer, Users, Eye, X } from 'lucide-react';
+import { Package, CreditCard, TrendingUp, TrendingDown, FileDown, Users, Eye, X } from 'lucide-react';
 import { LoadingSpinner, PrintHeader } from '../components/shared';
 import { API_URL } from '../config';
 import { formatCurrencyForExcel, formatDateForExcel } from '../utils/excelExporter';
@@ -17,11 +17,11 @@ const Dashboard = () => {
     const [serverOffsetMs, setServerOffsetMs] = useState(0);
     const [serverTimezoneOffsetMinutes, setServerTimezoneOffsetMinutes] = useState(null);
 
-    const fetchDashboardData = async (dateRange = {}) => { 
+    const fetchDashboardData = useCallback(async (dateRange) => { 
         setIsLoading(true); 
         try { 
-        const rangeStart = dateRange.startDate || startDate;
-        const rangeEnd = dateRange.endDate || endDate;
+      const rangeStart = dateRange.startDate;
+      const rangeEnd = dateRange.endDate;
         const res = await axios.get(`${API_URL}/api/dashboard/analysis?startDate=${rangeStart}&endDate=${rangeEnd}`); 
             setDashboardData(res.data); 
         } catch (err) { 
@@ -29,9 +29,9 @@ const Dashboard = () => {
         } finally { 
             setIsLoading(false); 
         } 
-    };
+    }, []);
     
-    useEffect(() => { fetchDashboardData(); }, []);
+    useEffect(() => { fetchDashboardData({ startDate, endDate }); }, [fetchDashboardData, startDate, endDate]);
 
     useEffect(() => {
       const initServerTime = async () => {
@@ -54,7 +54,7 @@ const Dashboard = () => {
       };
 
       initServerTime();
-    }, []);
+    }, [fetchDashboardData]);
 
     useEffect(() => {
       let timerId;
@@ -75,7 +75,7 @@ const Dashboard = () => {
 
       scheduleMidnightReset();
       return () => clearTimeout(timerId);
-    }, [serverOffsetMs]);
+    }, [serverOffsetMs, fetchDashboardData]);
 
     const handleCustomerDetail = async (customer) => { 
         setSelectedCustomer(customer); 
@@ -86,8 +86,6 @@ const Dashboard = () => {
             console.error(err); 
         } 
     };
-    
-    const handlePrint = () => { window.print(); };
     
     const handleExportCustomerHistoryToExcel = () => {
       if (!selectedCustomer || !historyData) return;
@@ -281,12 +279,11 @@ const Dashboard = () => {
                 <h1 className="text-3xl font-bold">Genel Bakış</h1>
                 <div className="flex items-center gap-2">
                   <button onClick={handleExportDashboardToExcel} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2"><FileDown size={16}/> Excel İndir</button>
-                  <button onClick={handlePrint} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2"><Printer size={16}/> Yazdır</button>
                   <div className="flex items-center gap-4 bg-gray-800 p-2 rounded-lg border border-gray-700">
                     <input type="date" className="bg-gray-700 text-white text-sm px-2 py-1.5 rounded outline-none" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                     <span className="text-gray-400">-</span>
                     <input type="date" className="bg-gray-700 text-white text-sm px-2 py-1.5 rounded outline-none" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-                    <button onClick={fetchDashboardData} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold">Getir</button>
+                    <button onClick={() => fetchDashboardData({ startDate, endDate })} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold">Getir</button>
                   </div>
                 </div>
             </div>

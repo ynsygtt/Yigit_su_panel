@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node start-dev.js",
     "dev:servers": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
-    "start": "concurrently \"npm --prefix backend start\" \"npm --prefix frontend preview\""
+    "start": "concurrently \"npm --prefix backend start\" \"npm --prefix frontend preview\"",
+    "test": "npm --prefix backend test"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

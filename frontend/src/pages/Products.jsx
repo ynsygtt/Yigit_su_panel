@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Plus, Trash2, FileDown, Printer, AlertOctagon } from 'lucide-react';
+import { Plus, Trash2, FileDown, AlertOctagon } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 import { useConfirmation } from '../hooks/useConfirmation';
 import { validateRequired, validateAmount } from '../utils/appHelpers';
@@ -13,7 +13,6 @@ import { API_URL } from '../config';
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [newProduct, setNewProduct] = useState({ name: '', stock: '', unitPrice: '', salePrice: '' });
   const [showForm, setShowForm] = useState(false);
   const { toast, show: showToast } = useToast();
@@ -21,7 +20,7 @@ const Products = () => {
   const [wasteModal, setWasteModal] = useState({ show: false, product: null });
   const [wasteData, setWasteData] = useState({ quantity: '', reason: 'Bozuk/Kırık' });
 
-  const fetchProducts = async () => { 
+  const fetchProducts = useCallback(async () => { 
     setIsLoading(true); 
     try { 
       const res = await axios.get(`${API_URL}/api/products`); 
@@ -32,8 +31,8 @@ const Products = () => {
     } finally { 
       setIsLoading(false); 
     } 
-  };
-  useEffect(() => { fetchProducts(); }, []);
+  }, [showToast]);
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
   
   const handleUpdateProduct = async (id, updatedData, successMsg = "Güncelleme başarılı") => { 
     try { 
@@ -162,7 +161,6 @@ const Products = () => {
         <div><h1 className="text-3xl font-bold">Ürün Yönetimi</h1></div>
         <div className="flex gap-2">
           <button onClick={handleExportToExcel} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><FileDown size={20}/> Excel İndir</button>
-          <button onClick={() => window.print()} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Printer size={20}/> Yazdır</button>
           <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg"><Plus size={20} /> Yeni Ürün Ekle</button>
         </div>
       </div>

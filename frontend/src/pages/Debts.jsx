@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { Search, FileDown, Printer, Banknote, FileText, Trash2, X, History, CreditCard } from 'lucide-react';
+import { Search, FileDown, Banknote, FileText, Trash2, X, History, CreditCard } from 'lucide-react';
 import { LoadingSpinner, ConfirmationModal, Toast, PrintHeader } from '../components/shared';
 import { API_URL } from '../config';
 import { formatCurrencyForExcel } from '../utils/excelExporter';
@@ -271,7 +271,6 @@ const Debts = () => {
                 <div className="flex items-center gap-4">
                      <button onClick={() => setShowManualDebtModal(true)} className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-bold shadow-lg transition-colors"><History size={20}/> Geçmişe Yönelik Borç Ekle</button>
                  <button onClick={handleExportDebtorsToExcel} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><FileDown size={20}/> Excel İndir</button>
-                     <button onClick={() => window.print()} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Printer size={20}/> Yazdır</button>
                     <div className="bg-red-900/30 border border-red-500/50 px-6 py-3 rounded-xl flex flex-col items-end">
                         <span className="text-red-300 text-xs font-bold uppercase tracking-wider">Piyasadaki Toplam Alacak</span>
                         <span className="text-2xl font-bold text-white">{totalReceivable} ₺</span>

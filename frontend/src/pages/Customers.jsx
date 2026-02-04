@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import { Plus, Search, FileDown, Printer } from 'lucide-react';
+import { Plus, Search, FileDown } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 import { useConfirmation } from '../hooks/useConfirmation';
 import { validateRequired, searchItems } from '../utils/appHelpers';
-import { formatCurrencyForExcel, formatDateForExcel } from '../utils/excelExporter';
 import { generateSectionedExcel, addSummarySection } from '../utils/excelTemplates';
 import { Toast, LoadingSpinner, ConfirmationModal, PrintHeader } from '../components/shared';
 import CustomerRow from '../components/CustomerRow';
@@ -50,7 +49,7 @@ const Customers = () => {
     }
   };
 
-  const fetchCustomers = async () => { 
+  const fetchCustomers = useCallback(async () => { 
     setIsLoading(true); 
     try { 
       const res = await axios.get(`${API_URL}/api/customers`); 
@@ -61,8 +60,8 @@ const Customers = () => {
     } finally { 
       setIsLoading(false); 
     } 
-  };
-  useEffect(() => { fetchCustomers(); }, []);
+  }, [showToast]);
+  useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
   
   const handleAddCustomer = async (e) => { 
     e.preventDefault(); 
@@ -122,7 +121,6 @@ const Customers = () => {
         <div><h1 className="text-3xl font-bold">Müşteriler</h1></div>
         <div className="flex gap-2">
             <button onClick={handleExportCustomersToExcel} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><FileDown size={20}/> Excel İndir</button>
-            <button onClick={() => window.print()} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Printer size={20}/> Yazdır</button>
             <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg"><Plus size={20} /> Müşteri Ekle</button>
         </div>
       </div>

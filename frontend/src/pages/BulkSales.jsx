@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Plus, Trash2, Eye, X, FileDown, Truck, Clock, CheckCircle } from 'lucide-react';
 import { LoadingSpinner, ConfirmationModal, Toast, PrintHeader } from '../components/shared';
@@ -49,7 +49,7 @@ const BulkSales = () => {
     }
   };
 
-  const showToastMessage = (message, type) => setToast({ message, type });
+  const showToastMessage = useCallback((message, type) => setToast({ message, type }), []);
 
   const handleExportBulkSalesToExcel = () => {
     const bulkRows = bulkSales.map((bs, index) => ([
@@ -94,7 +94,7 @@ const BulkSales = () => {
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [bulkRes, custRes, prodRes] = await Promise.all([
@@ -111,9 +111,9 @@ const BulkSales = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showToastMessage]);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
     if (!customerSearch) {
