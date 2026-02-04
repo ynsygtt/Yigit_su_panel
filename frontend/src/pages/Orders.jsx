@@ -202,7 +202,10 @@ const Orders = () => {
       }
       try {
         const res = await axios.get(`${API_URL}/api/customers?search=${debouncedCustomerSearch}`);
-        setFilteredCustomerSearch(res.data);
+        const term = debouncedCustomerSearch.toLowerCase();
+        setFilteredCustomerSearch(
+          res.data.filter(c => (c.name || '').toLowerCase().includes(term) || (c.phone || '').toLowerCase().includes(term))
+        );
       } catch (err) {
         console.error(err);
       }
