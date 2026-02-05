@@ -91,14 +91,22 @@ const Dashboard = () => {
     const handleExportCustomerHistoryToExcel = () => {
       if (!selectedCustomer || !historyData) return;
       
-      const transactionRows = historyData.map((item, index) => ([
+      const transactionRows = historyData.map((item, index) => {
+        let description = item.description;
+        if (item.type === 'Toplu Satış' && (item.bulkDeliveredQty !== undefined || item.bulkRemainingQty !== undefined)) {
+          const delivered = item.bulkDeliveredQty || 0;
+          const remaining = item.bulkRemainingQty || 0;
+          description = `${description} (Teslim: ${delivered}, Kalan: ${remaining})`;
+        }
+        return ([
         index + 1,
         new Date(item.date).toLocaleDateString('tr-TR'),
         new Date(item.date).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
-        item.description,
+        description,
         item.type === 'Tahsilat' ? 'Tahsilat' : (item.paymentMethod || item.type || 'Bilinmiyor'),
         formatCurrencyForExcel(item.amount || 0)
-      ]));
+      ]);
+      });
 
       const totalAmount = historyData.reduce((sum, item) => sum + item.amount, 0);
 
@@ -150,8 +158,7 @@ const Dashboard = () => {
         if (!order.date) return;
         const orderDate = new Date(order.date);
         if (orderDate >= start && orderDate <= end) {
-          const method = order.paymentMethod || 'Nakit';
-          const normalized = method === 'Kart' ? 'K.Kartı' : method;
+          const normalized = normalizePaymentMethod(order.paymentMethod);
           if (paymentTotals[normalized] === undefined) {
             paymentTotals[normalized] = 0;
           }
@@ -161,13 +168,23 @@ const Dashboard = () => {
 
       const paymentStats = dashboardData.payments || [];
       paymentStats.forEach((payment) => {
-        const method = payment._id || 'Nakit';
-        const normalized = method === 'Kart' ? 'K.Kartı' : method;
+        const normalized = normalizePaymentMethod(payment._id);
         if (normalized !== 'Borç') {
           if (paymentTotals[normalized] === undefined) {
             paymentTotals[normalized] = 0;
           }
           paymentTotals[normalized] += payment.totalAmount || 0;
+        }
+      });
+
+      const bulkSales = dashboardData.bulkSales || [];
+      bulkSales.forEach((sale) => {
+        const normalized = normalizePaymentMethod(sale.paymentMethod);
+        if (normalized !== 'Borç') {
+          if (paymentTotals[normalized] === undefined) {
+            paymentTotals[normalized] = 0;
+          }
+          paymentTotals[normalized] += sale.totalAmount || 0;
         }
       });
 
@@ -178,8 +195,8 @@ const Dashboard = () => {
       ]));
 
       const summaryRows = [
-        ['Toplam Satış', dashboardData.summary?.totalSales || 0],
-        ['Toplam Gider', dashboardData.totalExpense || 0],
+        ['Toplam Satış', formatCurrencyForExcel(dashboardData.summary?.totalSales || 0)],
+        ['Toplam Gider', formatCurrencyForExcel(dashboardData.totalExpense || 0)],
         ['Satılan Adet', dashboardData.summary?.totalItems || 0]
       ];
 
@@ -188,7 +205,8 @@ const Dashboard = () => {
         c.name || 'Müşteri',
         c.totalAmount || 0,
         c.paidAmount || 0,
-        c.debtAmount || 0
+        c.debtAmount || 0,
+        c.isBulkSaleOnly ? 'Toplu Satış' : '-'
       ]));
 
       const sections = [
@@ -209,7 +227,7 @@ const Dashboard = () => {
         addSummarySection(summaryRows),
         {
           title: 'MÜŞTERİ SIRALAMASI',
-          headers: ['Sıra', 'Müşteri', 'Toplam Tutar', 'Ödenen', 'Borç'],
+          headers: ['Sıra', 'Müşteri', 'Toplam Tutar', 'Ödenen', 'Borç', 'Not'],
           rows: customerRows
         }
       ];

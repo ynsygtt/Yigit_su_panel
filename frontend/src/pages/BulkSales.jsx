@@ -64,14 +64,23 @@ const BulkSales = () => {
       (bs.items || []).reduce((sum, item) => sum + ((item.quantity || 0) - (item.delivered || 0)), 0),
       formatCurrencyForExcel(bs.totalAmount || 0),
       bs.paymentMethod || '-',
-      bs.status || '-'
+      bs.status || '-',
+      (bs.isCancelled || bs.status === 'İptal') ? (bs.cancelledRemainingQty || 0) : '-',
+      (bs.isCancelled || bs.status === 'İptal') ? formatCurrencyForExcel(bs.cancelledRemainingValue || 0) : '-',
+      bs.cancelledAt ? new Date(bs.cancelledAt).toLocaleString('tr-TR') : '-'
     ]));
 
     const totalAmount = bulkSales.reduce((sum, bs) => sum + (bs.totalAmount || 0), 0);
     const totalItems = bulkSales.reduce((sum, bs) => sum + (bs.items || []).reduce((s, item) => s + (item.quantity || 0), 0), 0);
+    const cancelledCount = bulkSales.filter(bs => bs.isCancelled || bs.status === 'İptal').length;
+    const cancelledRemainingQty = bulkSales.reduce((sum, bs) => sum + (bs.cancelledRemainingQty || 0), 0);
+    const cancelledRemainingValue = bulkSales.reduce((sum, bs) => sum + (bs.cancelledRemainingValue || 0), 0);
 
     const summaryRows = [
       ['Toplam Toplu Satış', bulkSales.length],
+      ['İptal Edilen Satış', cancelledCount],
+      ['İptal Kalan Adet', cancelledRemainingQty],
+      ['İptal Kalan Tutar', formatCurrencyForExcel(cancelledRemainingValue)],
       ['Toplam Adet', totalItems],
       ['Toplam Tutar', formatCurrencyForExcel(totalAmount)],
       ['Tarih Aralığı', 'Tüm Zamanlar']
@@ -80,7 +89,7 @@ const BulkSales = () => {
     const sections = [
       {
         title: 'TOPLU SATIŞLAR',
-        headers: ['Sıra', 'Müşteri', 'Ürün Detayları', 'Toplam', 'Teslim', 'Kalan', 'Tutar', 'Ödeme', 'Durum'],
+        headers: ['Sıra', 'Müşteri', 'Ürün Detayları', 'Toplam', 'Teslim', 'Kalan', 'Tutar', 'Ödeme', 'Durum', 'İptal Kalan', 'İptal Tutar', 'İptal Tarihi'],
         rows: bulkRows
       },
       addSummarySection(summaryRows)

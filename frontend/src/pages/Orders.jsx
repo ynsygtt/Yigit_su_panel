@@ -152,22 +152,25 @@ const Orders = () => {
       formatDateForExcel(o.date)
     ]));
 
-    const completedRows = completedOrders.map((o, index) => ([
-      index + 1,
-      o.customerName,
-      (o.items || []).map(item => `${item.quantity}x ${item.productName}`).join(', '),
-      formatCurrencyForExcel(o.totalAmount || 0),
-      o.paymentMethod || '-',
-      formatDateForExcel(o.date)
-    ]));
+    const completedRows = completedOrdersWithBulk.map((o, index) => ([
+        index + 1,
+        o.customerName,
+        (o.items || []).map(item => `${item.quantity}x ${item.productName}`).join(', '),
+        formatCurrencyForExcel(o.totalAmount || 0),
+        o.paymentMethod || '-',
+        formatDateForExcel(o.date),
+        o.isBulkSale ? 'Toplu Satış' : 'Sipariş'
+      ]));
 
-    const totalAmount = [...activeOrders, ...completedOrders].reduce((sum, o) => sum + o.totalAmount, 0);
+      const totalAmount = [...activeOrders, ...completedOrdersWithBulk]
+        .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
     const summaryRows = [
       ['Tarih Aralığı', `${formatDateForExcel(startDate)} - ${formatDateForExcel(endDate)}`],
-      ['Toplam Sipariş', activeOrders.length + completedOrders.length],
+      ['Toplam Sipariş', activeOrders.length + completedOrdersWithBulk.length],
       ['Aktif Sipariş', activeOrders.length],
-      ['Tamamlanan Sipariş', completedOrders.length],
+      ['Tamamlanan Sipariş', completedOrdersWithBulk.length],
+      ['Toplu Satış (Teslim)', completedBulkSales.length],
       ['Toplam Tutar', formatCurrencyForExcel(totalAmount)]
     ];
 
@@ -183,8 +186,8 @@ const Orders = () => {
       },
       {
         title: 'TESLİM EDİLEN SİPARİŞLER',
-        headers: ['Sıra', 'Müşteri', 'İçerik', 'Tutar', 'Ödeme', 'Tarih'],
-        rows: completedRows.length > 0 ? completedRows : [['Veri yok', '', '', '', '', '']]
+        headers: ['Sıra', 'Müşteri', 'İçerik', 'Tutar', 'Ödeme', 'Tarih', 'Kaynak'],
+        rows: completedRows.length > 0 ? completedRows : [['Veri yok', '', '', '', '', '', '']]
       },
       addSummarySection(summaryRows)
     ];
