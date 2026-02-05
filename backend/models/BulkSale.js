@@ -29,8 +29,23 @@ const BulkSaleSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Bekleme', 'Kısmi Teslim', 'Tamamlandı'],
+    enum: ['Bekleme', 'Kısmi Teslim', 'Tamamlandı', 'İptal'],
     default: 'Bekleme'
+  },
+  isCancelled: {
+    type: Boolean,
+    default: false
+  },
+  cancelledAt: {
+    type: Date
+  },
+  cancelledRemainingQty: {
+    type: Number,
+    default: 0
+  },
+  cancelledRemainingValue: {
+    type: Number,
+    default: 0
   },
   notes: String,
   createdAt: {

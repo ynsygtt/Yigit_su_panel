@@ -47,11 +47,12 @@ const Finance = () => {
 
     const showToastMessage = (message, type) => setToast({ message, type });
 
-    const fetchStats = useCallback(async ({ startDate: rangeStart, endDate: rangeEnd, category } = {}) => {
+    const fetchStats = useCallback(async ({ startDate: rangeStart, endDate: rangeEnd, category, cacheBuster } = {}) => {
         setIsLoading(true);
         try { 
             let url = `${API_URL}/api/finance/stats?category=${category}`;
             if (rangeStart && rangeEnd) { url += `&startDate=${rangeStart}&endDate=${rangeEnd}`; }
+            if (cacheBuster) { url += `&_=${cacheBuster}`; }
             const res = await axios.get(url); 
             setStats(res.data); 
         } catch(err) { 
@@ -129,7 +130,7 @@ const Finance = () => {
         const start = new Date(startDate);
         const end = new Date(endDate);
         if (start > end) { showToastMessage("Başlangıç tarihi bitiş tarihinden sonra olamaz.", "error"); return; }
-        fetchStats({ startDate, endDate, category: categoryFilter }); 
+        fetchStats({ startDate, endDate, category: categoryFilter, cacheBuster: Date.now() }); 
     };
     
     const handleAddExpense = async () => {
@@ -140,7 +141,7 @@ const Finance = () => {
             await axios.post(`${API_URL}/api/expenses`, { ...newExpense, title }); 
             setShowExpenseModal(false); 
             setNewExpense({ title: '', amount: '', category: 'Genel' }); 
-            fetchStats({ startDate, endDate, category: categoryFilter }); 
+            fetchStats({ startDate, endDate, category: categoryFilter, cacheBuster: Date.now() }); 
             showToastMessage("Gider ekleme başarılı", 'success'); 
         } catch(err) { 
             showToastMessage(err.response?.data?.error || "Gider ekleme başarısız", 'error'); 
@@ -195,7 +196,7 @@ const Finance = () => {
                 });
             }
             closeEditModal();
-            fetchStats({ startDate, endDate, category: categoryFilter });
+            fetchStats({ startDate, endDate, category: categoryFilter, cacheBuster: Date.now() });
             showToastMessage('İşlem güncellendi', 'success');
         } catch (err) {
             showToastMessage(err.response?.data?.error || 'İşlem güncellenemedi', 'error');
@@ -214,9 +215,15 @@ const Finance = () => {
                 await axios.delete(`${API_URL}/api/debts/manual/${t.sourceId}`);
             }
             setDeleteModal({ show: false, transaction: null });
-            fetchStats({ startDate, endDate, category: categoryFilter });
+            fetchStats({ startDate, endDate, category: categoryFilter, cacheBuster: Date.now() });
             showToastMessage('İşlem silindi', 'success');
         } catch (err) {
+            if (err.response?.status === 404) {
+                setDeleteModal({ show: false, transaction: null });
+                fetchStats({ startDate, endDate, category: categoryFilter, cacheBuster: Date.now() });
+                showToastMessage('Kayıt zaten silinmiş olabilir', 'warning');
+                return;
+            }
             showToastMessage(err.response?.data?.error || 'İşlem silinemedi', 'error');
         }
     };

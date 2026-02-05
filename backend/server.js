@@ -97,6 +97,7 @@ const dashboardRoutes = require('./routes/dashboard')({
     Order,
     Payment,
     Expense,
+    BulkSale,
     getReportCacheKey,
     getCachedReport,
     setCachedReport

@@ -171,7 +171,7 @@ const BulkSales = () => {
       setNotes('');
     } catch (err) {
       console.error(err);
-      showToastMessage('Hata oluştu', 'error');
+      showToastMessage(err.response?.data?.error || 'Hata oluştu', 'error');
     }
   };
 
@@ -189,7 +189,7 @@ const BulkSales = () => {
       setDeleteModal({ show: false, id: null });
     } catch (err) {
       console.error(err);
-      showToastMessage('Hata oluştu', 'error');
+      showToastMessage(err.response?.data?.error || 'Hata oluştu', 'error');
     }
   };
 
@@ -224,6 +224,27 @@ const BulkSales = () => {
       showToastMessage('Hata oluştu', 'error');
     }
   };
+
+  const bulkSaleToDelete = bulkSales.find(bs => bs._id === deleteModal.id);
+  const deleteSummary = bulkSaleToDelete
+    ? bulkSaleToDelete.items.reduce(
+        (acc, item) => {
+          const delivered = item.delivered || 0;
+          const quantity = item.quantity || 0;
+          const remaining = Math.max(quantity - delivered, 0);
+          const unitPrice = item.unitPrice || 0;
+          return {
+            remainingQty: acc.remainingQty + remaining,
+            remainingValue: acc.remainingValue + remaining * unitPrice
+          };
+        },
+        { remainingQty: 0, remainingValue: 0 }
+      )
+    : { remainingQty: 0, remainingValue: 0 };
+
+  const deleteMessage = bulkSaleToDelete
+    ? `Bu toplu satış kaydı silinecek. Kalan miktar: ${deleteSummary.remainingQty} adet. Geri ödenecek tutar: ${deleteSummary.remainingValue.toLocaleString('tr-TR')} ₺. Emin misiniz?`
+    : 'Bu toplu satış kaydı silinecek. Emin misiniz?';
 
   return (
     <div className="p-8 ml-64 min-h-screen">
@@ -260,7 +281,7 @@ const BulkSales = () => {
                     <tr key={bs._id} className="border-b border-gray-700 hover:bg-gray-800/50">
                       <td className="px-4 py-3 font-semibold text-gray-100">{bs.customer.name}</td>
                       <td className="px-4 py-3 text-right font-bold text-green-400">{bs.totalAmount.toLocaleString('tr-TR')} ₺</td>
-                      <td className="px-4 py-3"><span className={`px-3 py-1 rounded-full text-xs font-bold ${bs.status === 'Tamamlandı' ? 'bg-green-900/30 text-green-400' : bs.status === 'Kısmi Teslim' ? 'bg-yellow-900/30 text-yellow-400' : 'bg-blue-900/30 text-blue-400'}`}>{bs.status}</span></td>
+                      <td className="px-4 py-3"><span className={`px-3 py-1 rounded-full text-xs font-bold ${bs.status === 'Tamamlandı' ? 'bg-green-900/30 text-green-400' : bs.status === 'Kısmi Teslim' ? 'bg-yellow-900/30 text-yellow-400' : bs.status === 'İptal' ? 'bg-red-900/30 text-red-400' : 'bg-blue-900/30 text-blue-400'}`}>{bs.status}</span></td>
                       <td className="px-4 py-3 text-gray-200">{bs.paymentMethod}</td>
                       <td className="px-4 py-3 text-center">
                         <div className="flex items-center justify-center gap-2">
@@ -406,7 +427,7 @@ const BulkSales = () => {
         </div>
       )}
 
-      <ConfirmationModal isOpen={deleteModal.show} message="Bu toplu satış kaydı silinecek. Emin misiniz?" onConfirm={handleDeleteBulkSale} onCancel={() => setDeleteModal({ show: false, id: null })} />
+      <ConfirmationModal isOpen={deleteModal.show} message={deleteMessage} onConfirm={handleDeleteBulkSale} onCancel={() => setDeleteModal({ show: false, id: null })} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );

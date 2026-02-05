@@ -16,6 +16,7 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [bulkSales, setBulkSales] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -49,10 +50,11 @@ const Orders = () => {
   const fetchData = useCallback(async (page = 1, append = false) => {
     setIsLoading(true);
     try {
-      const [ordRes, prodRes, custRes] = await Promise.all([
+      const [ordRes, prodRes, custRes, bulkRes] = await Promise.all([
         axios.get(`${API_URL}/api/orders`, { params: { page, limit: ordersLimit } }),
         axios.get(`${API_URL}/api/products`),
-        axios.get(`${API_URL}/api/customers`)
+        axios.get(`${API_URL}/api/customers`),
+        axios.get(`${API_URL}/api/bulk-sales`)
       ]);
       const orderPayload = ordRes.data;
       const orderList = Array.isArray(orderPayload) ? orderPayload : (orderPayload.data || []);
@@ -60,6 +62,7 @@ const Orders = () => {
       setOrders(prev => (append ? [...prev, ...orderList] : orderList));
       setProducts(prodRes.data);
       setCustomers(custRes.data);
+      setBulkSales(bulkRes.data || []);
       if (pagination) {
         setOrdersPage(pagination.page);
         setOrdersHasMore(pagination.page < pagination.totalPages);
@@ -102,6 +105,42 @@ const Orders = () => {
 
   const activeOrders = filteredOrders.filter(o => o.status !== 'Teslim Edildi');
   const completedOrders = filteredOrders.filter(o => o.status === 'Teslim Edildi');
+
+  const filteredBulkSales = (bulkSales || []).filter((bs) => {
+    const dateValue = bs.updatedAt || bs.createdAt;
+    if (!dateValue) return false;
+    const saleDate = new Date(dateValue);
+    const { start, end } = serverTimezoneOffsetMinutes === null
+      ? getLocalDayRange(startDate, endDate)
+      : getServerDayRange(startDate, endDate, serverTimezoneOffsetMinutes);
+    return saleDate >= start && saleDate <= end;
+  });
+
+  const completedBulkSales = filteredBulkSales
+    .map((bs) => {
+      const deliveredItems = (bs.items || []).filter((item) => (item.delivered || 0) > 0);
+      if (deliveredItems.length === 0) return null;
+      const deliveredAmount = deliveredItems.reduce(
+        (sum, item) => sum + (item.delivered || 0) * (item.unitPrice || 0),
+        0
+      );
+      return {
+        _id: `bulk-${bs._id}`,
+        customerName: bs.customer?.name || 'Müşteri',
+        items: deliveredItems.map((item) => ({
+          productName: item.product?.name || item.productName || item.name || 'Ürün',
+          quantity: item.delivered || 0
+        })),
+        totalAmount: deliveredAmount,
+        paymentMethod: bs.paymentMethod || '-',
+        date: bs.updatedAt || bs.createdAt,
+        isBulkSale: true
+      };
+    })
+    .filter(Boolean);
+
+  const completedOrdersWithBulk = [...completedOrders, ...completedBulkSales]
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const handleExportOrdersToExcel = () => {
     const activeRows = activeOrders.map((o, index) => ([
@@ -252,7 +291,7 @@ const Orders = () => {
     if(editingOrderId) await axios.delete(`${API_URL}/api/orders/${editingOrderId}`);
     const newOrder = { customerName: customerDetails.name, customerId: customerDetails._id, items: cart, totalAmount: calculateTotal() };
     try { await axios.post(`${API_URL}/api/orders`, newOrder); handleCloseModal(); fetchData(1, false); showToastMessage('Sipariş girme başarılı', 'success'); } 
-    catch { showToastMessage("Sipariş girme başarısız", 'error'); }
+    catch (err) { showToastMessage(err.response?.data?.error || "Sipariş girme başarısız", 'error'); }
   };
 
   const handleEditOrder = (order) => {
@@ -364,21 +403,23 @@ const Orders = () => {
           <CheckCircle className="no-print"/>
           Teslim Edilen Geçmiş Siparişler
           <span className="ml-2 text-base font-semibold text-green-300 print:text-black">
-            ( {completedOrders.length} )
+            ( {completedOrdersWithBulk.length} )
           </span>
         </h2>
         <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-lg overflow-hidden opacity-80 hover:opacity-100 transition-opacity print:bg-white print:opacity-100 print:border-none print:shadow-none">
             <table className="w-full text-left border-collapse print:border print:border-black">
                 <thead><tr className="bg-gray-900 text-gray-400 text-sm uppercase print:bg-gray-200 print:text-black print:border-b print:border-black"><th className="p-4 print:p-2 print:border-r print:border-black">Müşteri</th><th className="p-4 print:p-2 print:border-r print:border-black">İçerik</th><th className="p-4 print:p-2 print:border-r print:border-black">Tutar</th><th className="p-4 print:p-2 print:border-r print:border-black">Ödeme</th><th className="p-4 print:p-2">Tarih</th></tr></thead>
                 <tbody className="divide-y divide-gray-700 print:divide-black">
-                    {completedOrders.length === 0 ? <tr><td colSpan="5" className="p-6 text-center text-gray-500 print:text-black">Bu aralıkta geçmiş sipariş yok.</td></tr> : completedOrders.map((order) => (
-                        <tr key={order._id} className="hover:bg-gray-750 print:hover:bg-transparent">
-                            <td className="p-4 font-bold print:text-black print:p-2">{order.customerName}</td>
-                            <td className="p-4 text-sm text-gray-300 print:text-black print:p-2">{order.items.length > 0 ? order.items.map((item, i) => <div key={i}>{item.quantity}x {item.productName}</div>) : <span className="italic text-gray-500">{order.note || 'Manuel Borç'}</span>}</td>
-                            <td className={`p-4 font-bold ${getPaymentColor(order.paymentMethod)} print:text-black print:p-2`}>{order.totalAmount} ₺</td>
-                            <td className={`p-4 ${getPaymentColor(order.paymentMethod)} print:text-black print:p-2`}>{order.paymentMethod}</td>
-                            <td className="p-4 text-gray-500 text-sm print:text-black print:p-2">{new Date(order.date).toLocaleDateString()} {new Date(order.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
-                        </tr>
+                    {completedOrdersWithBulk.length === 0 ? <tr><td colSpan="5" className="p-6 text-center text-gray-500 print:text-black">Bu aralıkta geçmiş sipariş yok.</td></tr> : completedOrdersWithBulk.map((order) => (
+                      <tr key={order._id} className="hover:bg-gray-750 print:hover:bg-transparent">
+                        <td className="p-4 font-bold print:text-black print:p-2">{order.customerName}</td>
+                        <td className="p-4 text-sm text-gray-300 print:text-black print:p-2">{order.items.length > 0 ? order.items.map((item, i) => <div key={i}>{item.quantity}x {item.productName}</div>) : <span className="italic text-gray-500">{order.note || 'Manuel Borç'}</span>}</td>
+                            <td className={`p-4 font-bold ${getPaymentColor(order.paymentMethod)} print:text-black print:p-2`}>
+                              {order.isBulkSale ? 'Toplu Satış' : `${order.totalAmount} ₺`}
+                            </td>
+                        <td className={`p-4 ${getPaymentColor(order.paymentMethod)} print:text-black print:p-2`}>{order.paymentMethod}</td>
+                        <td className="p-4 text-gray-500 text-sm print:text-black print:p-2">{new Date(order.date).toLocaleDateString()} {new Date(order.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                      </tr>
                     ))}
                 </tbody>
             </table>

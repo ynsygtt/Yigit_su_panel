@@ -1,0 +1,186 @@
+{
+  "timestamp": "2026-02-04T23:00:00.263Z",
+  "mongoUri": "mongodb://localhost:27017/su_takip_db",
+  "collections": {
+    "products": {
+      "count": 6,
+      "data": [
+        {
+          "_id": "69470dd1079221580d8f720f",
+          "name": "0.5 Lt Pet Su",
+          "category": "Su",
+          "unitPrice": 28.75,
+          "salePrice": 45,
+          "stock": 1330,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "69470dd1079221580d8f7210",
+          "name": "1.5 Lt Pet Su",
+          "category": "Su",
+          "unitPrice": 29,
+          "salePrice": 45,
+          "stock": 512,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "69470dd1079221580d8f7211",
+          "name": "5 Lt Pet Su",
+          "category": "Su",
+          "unitPrice": 58.5,
+          "salePrice": 90,
+          "stock": 346,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "69470dd1079221580d8f7212",
+          "name": "200cc Bardak Su",
+          "category": "Su",
+          "unitPrice": 65,
+          "salePrice": 100,
+          "stock": 110,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "69470dd1079221580d8f7213",
+          "name": "19 Lt Damacana",
+          "category": "Su",
+          "unitPrice": 32,
+          "salePrice": 100,
+          "stock": 367,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "69470dd1079221580d8f7214",
+          "name": "Pompa",
+          "category": "Ekipman",
+          "unitPrice": 75,
+          "salePrice": 150,
+          "stock": 99,
+          "unit": "Adet",
+          "__v": 0
+        }
+      ]
+    },
+    "customers": {
+      "count": 3,
+      "data": [
+        {
+          "_id": "69839f953ed6e8a4c058f001",
+          "name": "yunus",
+          "phone": "50646545465405",
+          "address": "aserfasdfasd",
+          "note": "asdfasdf",
+          "__v": 0
+        },
+        {
+          "_id": "6983ceaa5e2cd80b6f0eb60f",
+          "name": "Kenan",
+          "phone": "20524530534653",
+          "address": "sgdfg",
+          "note": "sdfgsdfg",
+          "__v": 0
+        },
+        {
+          "_id": "6983ceb65e2cd80b6f0eb612",
+          "name": "NuRay",
+          "phone": "dfjghdfjgdfgj",
+          "address": "dfgjdfjgdfj",
+          "note": "dfhgjdfghjdfghjd",
+          "__v": 0
+        }
+      ]
+    },
+    "orders": {
+      "count": 0,
+      "data": []
+    },
+    "payments": {
+      "count": 0,
+      "data": []
+    },
+    "expenses": {
+      "count": 0,
+      "data": []
+    },
+    "bulkSales": {
+      "count": 2,
+      "data": [
+        {
+          "customer": {
+            "_id": "69839f953ed6e8a4c058f001",
+            "name": "yunus",
+            "contact": "50646545465405"
+          },
+          "_id": "6983c98c71e61389c31d79fe",
+          "items": [
+            {
+              "product": {
+                "_id": "69470dd1079221580d8f720f",
+                "name": "0.5 Lt Pet Su",
+                "category": "Su",
+                "salePrice": 45
+              },
+              "quantity": 10,
+              "unitPrice": 45,
+              "totalPrice": 450,
+              "delivered": 5,
+              "_id": "6983c98c71e61389c31d79ff"
+            }
+          ],
+          "totalAmount": 450,
+          "paymentMethod": "Nakit",
+          "remainingDelivery": 0,
+          "status": "İptal",
+          "notes": "",
+          "createdAt": "2026-02-04T22:34:52.184Z",
+          "updatedAt": "2026-02-04T22:46:07.236Z",
+          "__v": 0,
+          "cancelledAt": "2026-02-04T22:46:07.236Z",
+          "cancelledRemainingQty": 5,
+          "cancelledRemainingValue": 225,
+          "isCancelled": true
+        },
+        {
+          "customer": {
+            "_id": "69839f953ed6e8a4c058f001",
+            "name": "yunus",
+            "contact": "50646545465405"
+          },
+          "_id": "6983cc97972708034a4cb6c2",
+          "items": [
+            {
+              "product": {
+                "_id": "69470dd1079221580d8f720f",
+                "name": "0.5 Lt Pet Su",
+                "category": "Su",
+                "salePrice": 45
+              },
+              "quantity": 100,
+              "unitPrice": 45,
+              "totalPrice": 4500,
+              "delivered": 70,
+              "_id": "6983cc97972708034a4cb6c3"
+            }
+          ],
+          "totalAmount": 4500,
+          "paymentMethod": "Nakit",
+          "remainingDelivery": 0,
+          "status": "Kısmi Teslim",
+          "isCancelled": false,
+          "cancelledRemainingQty": 0,
+          "cancelledRemainingValue": 0,
+          "notes": "",
+          "createdAt": "2026-02-04T22:47:51.488Z",
+          "updatedAt": "2026-02-04T22:58:39.946Z",
+          "__v": 0
+        }
+      ]
+    }
+  }
+}

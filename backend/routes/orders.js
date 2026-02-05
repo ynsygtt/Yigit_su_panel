@@ -45,44 +45,33 @@ module.exports = ({ Order, Product }) => {
     router.post('/', async (req, res) => {
         try {
             const { customerName, customerId, items, totalAmount, paymentMethod } = req.body;
-
-            const session = await Order.startSession();
-            let createdOrder;
-
-            try {
-                await session.withTransaction(async () => {
-                    if (items && items.length > 0) {
-                        for (const item of items) {
-                            const product = await Product.findById(item.productId).session(session);
-                            if (!product) {
-                                throw new Error(`Ürün bulunamadı: ${item.productName || item.productId}`);
-                            }
-                            if (product.stock < item.quantity) {
-                                throw new Error(`${product.name} için stok yetersiz. Mevcut: ${product.stock}, İstenen: ${item.quantity}`);
-                            }
-                        }
-
-                        for (const item of items) {
-                            await Product.findByIdAndUpdate(
-                                item.productId,
-                                { $inc: { stock: -item.quantity } },
-                                { session }
-                            );
-                        }
+            if (items && items.length > 0) {
+                for (const item of items) {
+                    const product = await Product.findById(item.productId);
+                    if (!product) {
+                        throw new Error(`Ürün bulunamadı: ${item.productName || item.productId}`);
                     }
+                    if (product.stock < item.quantity) {
+                        throw new Error(`${product.name} için stok yetersiz. Mevcut: ${product.stock}, İstenen: ${item.quantity}`);
+                    }
+                }
 
-                    createdOrder = await new Order({
-                        customerName,
-                        customerId,
-                        items,
-                        totalAmount,
-                        paymentMethod,
-                        date: Date.now()
-                    }).save({ session });
-                });
-            } finally {
-                session.endSession();
+                for (const item of items) {
+                    await Product.findByIdAndUpdate(
+                        item.productId,
+                        { $inc: { stock: -item.quantity } }
+                    );
+                }
             }
+
+            const createdOrder = await new Order({
+                customerName,
+                customerId,
+                items,
+                totalAmount,
+                paymentMethod,
+                date: Date.now()
+            }).save();
 
             res.json(createdOrder);
         } catch (err) {

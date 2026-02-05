@@ -22,7 +22,8 @@ const Dashboard = () => {
         try { 
       const rangeStart = dateRange.startDate;
       const rangeEnd = dateRange.endDate;
-        const res = await axios.get(`${API_URL}/api/dashboard/analysis?startDate=${rangeStart}&endDate=${rangeEnd}`); 
+      const cacheBuster = dateRange.cacheBuster || Date.now();
+      const res = await axios.get(`${API_URL}/api/dashboard/analysis?startDate=${rangeStart}&endDate=${rangeEnd}&_=${cacheBuster}`); 
             setDashboardData(res.data); 
         } catch (err) { 
             console.error(err); 
@@ -31,7 +32,7 @@ const Dashboard = () => {
         } 
     }, []);
     
-    useEffect(() => { fetchDashboardData({ startDate, endDate }); }, [fetchDashboardData, startDate, endDate]);
+    useEffect(() => { fetchDashboardData({ startDate, endDate, cacheBuster: Date.now() }); }, [fetchDashboardData, startDate, endDate]);
 
     useEffect(() => {
       const initServerTime = async () => {
@@ -47,7 +48,7 @@ const Dashboard = () => {
           const serverDate = res.data.date || getLocalDateString(serverNow);
           setStartDate(serverDate);
           setEndDate(serverDate);
-          fetchDashboardData({ startDate: serverDate, endDate: serverDate });
+          fetchDashboardData({ startDate: serverDate, endDate: serverDate, cacheBuster: Date.now() });
         } catch (err) {
           console.error(err);
         }
@@ -68,7 +69,7 @@ const Dashboard = () => {
           const today = getLocalDateString(nowServer);
           setStartDate(today);
           setEndDate(today);
-          fetchDashboardData({ startDate: today, endDate: today });
+          fetchDashboardData({ startDate: today, endDate: today, cacheBuster: Date.now() });
           scheduleMidnightReset();
         }, msUntilMidnight + 50);
       };
@@ -221,6 +222,15 @@ const Dashboard = () => {
     paymentMethods.forEach((method) => { paymentTotals[method] = 0; });
     
     const allOrders = dashboardData.allOrders || [];
+    const normalizePaymentMethod = (method) => {
+      const value = (method || 'Nakit').toString();
+      if (/kart|kredi/i.test(value)) return 'K.Kartı';
+      if (/iban|havale/i.test(value)) return 'IBAN';
+      if (/borç/i.test(value)) return 'Borç';
+      if (/nakit/i.test(value)) return 'Nakit';
+      return 'Nakit';
+    };
+
     allOrders.forEach((order) => {
       if (!order.date) return;
       
@@ -230,8 +240,7 @@ const Dashboard = () => {
         : getServerDayRange(startDate, endDate, serverTimezoneOffsetMinutes);
       
       if (orderDate >= start && orderDate <= end) {
-        const method = order.paymentMethod || 'Nakit';
-        const normalized = method === 'Kart' ? 'K.Kartı' : method;
+        const normalized = normalizePaymentMethod(order.paymentMethod);
         
         if (paymentTotals[normalized] === undefined) {
           paymentTotals[normalized] = 0;
@@ -241,15 +250,25 @@ const Dashboard = () => {
     });
 
     const paymentStats = dashboardData.payments || [];
+    const bulkSales = dashboardData.bulkSales || [];
     paymentStats.forEach((payment) => {
-      const method = payment._id || 'Nakit';
-      const normalized = method === 'Kart' ? 'K.Kartı' : method;
+      const normalized = normalizePaymentMethod(payment._id);
       
       if (normalized !== 'Borç') {
         if (paymentTotals[normalized] === undefined) {
           paymentTotals[normalized] = 0;
         }
         paymentTotals[normalized] += payment.totalAmount || 0;
+      }
+    });
+
+    bulkSales.forEach((sale) => {
+      const normalized = normalizePaymentMethod(sale.paymentMethod);
+      if (normalized !== 'Borç') {
+        if (paymentTotals[normalized] === undefined) {
+          paymentTotals[normalized] = 0;
+        }
+        paymentTotals[normalized] += sale.totalAmount || 0;
       }
     });
     
@@ -283,7 +302,7 @@ const Dashboard = () => {
                     <input type="date" className="bg-gray-700 text-white text-sm px-2 py-1.5 rounded outline-none" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                     <span className="text-gray-400">-</span>
                     <input type="date" className="bg-gray-700 text-white text-sm px-2 py-1.5 rounded outline-none" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-                    <button onClick={() => fetchDashboardData({ startDate, endDate })} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold">Getir</button>
+                    <button onClick={() => fetchDashboardData({ startDate, endDate, cacheBuster: Date.now() })} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold">Getir</button>
                   </div>
                 </div>
             </div>
@@ -366,7 +385,9 @@ const Dashboard = () => {
                                         <tr key={c._id} className="hover:bg-gray-700/50 transition-colors print:hover:bg-transparent">
                                             <td className="p-3 text-gray-500 font-mono text-sm print:text-black print:border print:border-black">{i + 1}</td>
                                             <td className="p-3 font-medium print:text-black print:border print:border-black">{c.name}</td>
-                                            <td className={`p-3 text-right font-bold print:text-black print:border print:border-black ${amountColor}`}>{c.totalAmount} ₺</td>
+                                            <td className={`p-3 text-right font-bold print:text-black print:border print:border-black ${amountColor}`}>
+                                              {c.isBulkSaleOnly ? 'Toplu Satış' : `${c.totalAmount} ₺`}
+                                            </td>
                                             <td className="p-3 text-right no-print"><button onClick={() => handleCustomerDetail(c)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 ml-auto"><Eye size={14}/> Detay</button></td>
                                         </tr>
                                     );
@@ -408,13 +429,23 @@ const Dashboard = () => {
                                             }
                                             
                                             const paymentType = item.type === 'Tahsilat' ? 'Tahsilat' : (item.paymentMethod || item.type || 'Bilinmiyor');
+                                            const isBulkSale = item.type === 'Toplu Satış';
                                             
                                             return (
                                                 <tr key={idx} className={`hover:bg-gray-750 print:hover:bg-transparent ${rowBg}`}>
                                                     <td className="py-3 align-top text-gray-300 print-text">{new Date(item.date).toLocaleDateString('tr-TR')} <span className="text-xs text-gray-500 block print-text">{new Date(item.date).toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'})}</span></td>
-                                                    <td className="py-3 align-top text-gray-300 print-text max-w-md">{item.description}</td>
+                                                    <td className="py-3 align-top text-gray-300 print-text max-w-md">
+                                                      <div>{item.description}</div>
+                                                      {typeof item.bulkTotalQty === 'number' && (
+                                                        <div className="text-xs text-gray-500 mt-1 print-text">
+                                                          Toplam: {item.bulkTotalQty} • Teslim: {item.bulkDeliveredQty} • Kalan: {item.bulkRemainingQty}
+                                                        </div>
+                                                      )}
+                                                    </td>
                                                     <td className="py-3 align-top"><span className={`px-2 py-1 rounded text-xs font-bold print:border print:border-black print:bg-transparent print:text-black ${badgeBg}`}>{paymentType}</span></td>
-                                                    <td className={`py-3 align-top text-right font-bold text-lg print-text ${item.isIncome ? 'text-green-400' : amountColor}`}>{item.isIncome ? '-' : ''}{item.amount} ₺</td>
+                                                    <td className={`py-3 align-top text-right font-bold text-lg print-text ${item.isIncome ? 'text-green-400' : amountColor}`}>
+                                                      {isBulkSale ? 'Toplu Satış' : `${item.isIncome ? '-' : ''}${item.amount} ₺`}
+                                                    </td>
                                                 </tr>
                                             );
                                         })}
