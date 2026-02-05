@@ -1,0 +1,337 @@
+{
+  "timestamp": "2026-02-05T23:00:00.630Z",
+  "mongoUri": "mongodb://localhost:27017/su_takip_db",
+  "collections": {
+    "products": {
+      "count": 6,
+      "data": [
+        {
+          "_id": "6985062001404c3db332c461",
+          "name": "0.5 Lt Pet Su",
+          "category": "Su",
+          "unitPrice": 34.75,
+          "salePrice": 55,
+          "stock": 1867,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "6985065501404c3db332c464",
+          "name": "1.5 Lt Pet Su",
+          "category": "Su",
+          "unitPrice": 35.25,
+          "salePrice": 55,
+          "stock": 800,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "6985067a01404c3db332c467",
+          "name": "5 Lt Pet Su",
+          "category": "Su",
+          "unitPrice": 35.75,
+          "salePrice": 55,
+          "stock": 400,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "698506b101404c3db332c46a",
+          "name": "200cc Bardak Su",
+          "category": "Su",
+          "unitPrice": 72,
+          "salePrice": 120,
+          "stock": 295,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "698506f601404c3db332c46d",
+          "name": "19 Lt Damacana Su",
+          "category": "Su",
+          "unitPrice": 38,
+          "salePrice": 120,
+          "stock": 599,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "6985070d01404c3db332c470",
+          "name": "Pompa",
+          "category": "Su",
+          "unitPrice": 75,
+          "salePrice": 150,
+          "stock": 149,
+          "unit": "Adet",
+          "__v": 0
+        }
+      ]
+    },
+    "customers": {
+      "count": 3,
+      "data": [
+        {
+          "_id": "6985078501404c3db332c487",
+          "name": "Yunus Yiğit",
+          "phone": "5072246718",
+          "address": "Ovaeymir Mah. İsmet İnönü Cd. No: 28",
+          "note": "",
+          "__v": 0
+        },
+        {
+          "_id": "698507c601404c3db332c48a",
+          "name": "Kenan Yiğit",
+          "phone": "05546944696",
+          "address": "Orta Mah. Selanik Cd. No: 61 Kat: 4 Daire: 15",
+          "note": "",
+          "__v": 0
+        },
+        {
+          "_id": "6985080101404c3db332c48d",
+          "name": "Nuray Yiğit",
+          "phone": "05458796415",
+          "address": "Yedi Eylül Mah. No: 43 ",
+          "note": "",
+          "__v": 0
+        }
+      ]
+    },
+    "orders": {
+      "count": 6,
+      "data": [
+        {
+          "_id": "698510caa9b7fe3051172e47",
+          "customerName": "Yunus Yiğit",
+          "customerId": "6985078501404c3db332c487",
+          "items": [
+            {
+              "productName": "0.5 Lt Pet Su",
+              "productId": "6985062001404c3db332c461",
+              "quantity": 10,
+              "price": 55,
+              "total": 550,
+              "_id": "698510caa9b7fe3051172e48"
+            }
+          ],
+          "totalAmount": 550,
+          "status": "Teslim Edildi",
+          "paymentMethod": "Nakit",
+          "note": "",
+          "date": "2026-02-05T21:51:06.277Z",
+          "__v": 0
+        },
+        {
+          "_id": "698511dda9b7fe3051172f77",
+          "customerName": "Kenan Yiğit",
+          "customerId": "698507c601404c3db332c48a",
+          "items": [
+            {
+              "productName": "19 Lt Damacana Su",
+              "productId": "698506f601404c3db332c46d",
+              "quantity": 1,
+              "price": 120,
+              "total": 120,
+              "_id": "698511dda9b7fe3051172f78"
+            }
+          ],
+          "totalAmount": 120,
+          "status": "Teslim Edildi",
+          "paymentMethod": "K.Kartı",
+          "note": "",
+          "date": "2026-02-05T21:55:41.229Z",
+          "__v": 0
+        },
+        {
+          "_id": "6985122ea9b7fe3051172fe1",
+          "customerName": "Nuray Yiğit",
+          "customerId": "6985080101404c3db332c48d",
+          "items": [
+            {
+              "productName": "200cc Bardak Su",
+              "productId": "698506b101404c3db332c46a",
+              "quantity": 5,
+              "price": 120,
+              "total": 600,
+              "_id": "6985122ea9b7fe3051172fe2"
+            }
+          ],
+          "totalAmount": 600,
+          "status": "Teslim Edildi",
+          "paymentMethod": "IBAN",
+          "note": "",
+          "date": "2026-02-05T21:57:02.229Z",
+          "__v": 0
+        },
+        {
+          "_id": "698512bea9b7fe30511730c8",
+          "customerName": "Yunus Yiğit",
+          "customerId": "6985078501404c3db332c487",
+          "items": [
+            {
+              "productName": "Pompa",
+              "productId": "6985070d01404c3db332c470",
+              "quantity": 1,
+              "price": 150,
+              "total": 150,
+              "_id": "698512bea9b7fe30511730c9"
+            }
+          ],
+          "totalAmount": 150,
+          "status": "Teslim Edildi",
+          "paymentMethod": "Borç",
+          "note": "",
+          "date": "2026-02-05T21:59:26.326Z",
+          "__v": 0
+        },
+        {
+          "_id": "69851302a9b7fe3051173155",
+          "customerName": "Nuray Yiğit",
+          "customerId": "6985080101404c3db332c48d",
+          "items": [
+            {
+              "productName": "0.5 Lt Pet Su",
+              "productId": "6985062001404c3db332c461",
+              "quantity": 10,
+              "price": 55,
+              "total": 550,
+              "_id": "69851302a9b7fe3051173156"
+            }
+          ],
+          "totalAmount": 550,
+          "status": "Teslim Edildi",
+          "paymentMethod": "Borç",
+          "note": "",
+          "date": "2026-02-05T22:00:34.733Z",
+          "__v": 0
+        },
+        {
+          "_id": "69851d688235ccf8527f0cc1",
+          "customerName": "Yunus Yiğit",
+          "customerId": "6985078501404c3db332c487",
+          "items": [],
+          "totalAmount": 500,
+          "status": "Teslim Edildi",
+          "paymentMethod": "Borç",
+          "note": "",
+          "date": "2026-02-05T21:00:00.000Z",
+          "__v": 0
+        }
+      ]
+    },
+    "payments": {
+      "count": 3,
+      "data": [
+        {
+          "_id": "6985134ea9b7fe3051173285",
+          "customerId": "6985078501404c3db332c487",
+          "amount": 150,
+          "method": "Nakit",
+          "date": "2026-02-05T22:01:50.805Z",
+          "__v": 0
+        },
+        {
+          "_id": "69851d3e8235ccf8527f0c25",
+          "customerId": "6985080101404c3db332c48d",
+          "amount": 150,
+          "method": "Nakit",
+          "date": "2026-02-05T22:44:14.059Z",
+          "__v": 0
+        },
+        {
+          "_id": "69851d868235ccf8527f0d54",
+          "customerId": "6985078501404c3db332c487",
+          "amount": 500,
+          "method": "Nakit",
+          "date": "2026-02-05T22:45:26.195Z",
+          "__v": 0
+        }
+      ]
+    },
+    "expenses": {
+      "count": 1,
+      "data": [
+        {
+          "_id": "69851ba68235ccf8527f0b70",
+          "title": "Elektrik",
+          "amount": 350,
+          "category": "Elektrik/Su/Doğalgaz",
+          "date": "2026-02-05T22:37:26.925Z",
+          "__v": 0
+        }
+      ]
+    },
+    "bulkSales": {
+      "count": 2,
+      "data": [
+        {
+          "customer": {
+            "_id": "6985078501404c3db332c487",
+            "name": "Yunus Yiğit",
+            "contact": "5072246718"
+          },
+          "_id": "69851dbe8235ccf8527f0d6b",
+          "items": [
+            {
+              "product": {
+                "_id": "6985062001404c3db332c461",
+                "name": "0.5 Lt Pet Su",
+                "category": "Su",
+                "salePrice": 55
+              },
+              "quantity": 100,
+              "unitPrice": 55,
+              "totalPrice": 5500,
+              "delivered": 100,
+              "_id": "69851dbe8235ccf8527f0d6c"
+            }
+          ],
+          "totalAmount": 5500,
+          "paymentMethod": "Nakit",
+          "remainingDelivery": 0,
+          "status": "Tamamlandı",
+          "isCancelled": false,
+          "cancelledRemainingQty": 0,
+          "cancelledRemainingValue": 0,
+          "notes": "",
+          "createdAt": "2026-02-05T22:46:22.835Z",
+          "updatedAt": "2026-02-05T22:57:57.099Z",
+          "__v": 0
+        },
+        {
+          "customer": {
+            "_id": "698507c601404c3db332c48a",
+            "name": "Kenan Yiğit",
+            "contact": "05546944696"
+          },
+          "_id": "698520af2bcb5180bdba7e6e",
+          "items": [
+            {
+              "product": {
+                "_id": "6985062001404c3db332c461",
+                "name": "0.5 Lt Pet Su",
+                "category": "Su",
+                "salePrice": 55
+              },
+              "quantity": 50,
+              "unitPrice": 55,
+              "totalPrice": 2750,
+              "delivered": 13,
+              "_id": "698520af2bcb5180bdba7e6f"
+            }
+          ],
+          "totalAmount": 2750,
+          "paymentMethod": "Nakit",
+          "remainingDelivery": 0,
+          "status": "Kısmi Teslim",
+          "isCancelled": false,
+          "cancelledRemainingQty": 0,
+          "cancelledRemainingValue": 0,
+          "notes": "",
+          "createdAt": "2026-02-05T22:58:55.960Z",
+          "updatedAt": "2026-02-05T22:59:24.569Z",
+          "__v": 0
+        }
+      ]
+    }
+  }
+}

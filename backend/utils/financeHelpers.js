@@ -1,6 +1,9 @@
 const buildProductCostMap = (products = []) => {
     const map = {};
-    products.forEach(p => { map[p._id] = p.unitPrice; });
+    products.forEach(p => {
+        const id = p?._id ? String(p._id) : null;
+        if (id) map[id] = p.unitPrice;
+    });
     return map;
 };
 
@@ -35,10 +38,24 @@ const calculateFinanceStats = ({ orders = [], payments = [], expenses = [], bulk
 
     orders.forEach(o => {
         o.items.forEach(item => {
-            const itemUnitCost = productCostMap[item.productId] || 0;
+            const itemProductId = item?.productId ? String(item.productId) : null;
+            const itemUnitCost = itemProductId ? (productCostMap[itemProductId] || 0) : 0;
             const itemQuantity = item.quantity;
             totalCost += itemUnitCost * itemQuantity;
             totalQuantity += itemQuantity;
+        });
+    });
+
+    bulkSales.forEach(bs => {
+        (bs.items || []).forEach(item => {
+            const deliveredQty = item?.delivered || 0;
+            if (deliveredQty <= 0) return;
+            const itemProductId = item?.product?._id
+                ? String(item.product._id)
+                : (item?.productId ? String(item.productId) : null);
+            const itemUnitCost = itemProductId ? (productCostMap[itemProductId] || 0) : 0;
+            totalCost += itemUnitCost * deliveredQty;
+            totalQuantity += deliveredQty;
         });
     });
 

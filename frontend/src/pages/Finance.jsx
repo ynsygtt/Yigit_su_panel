@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Plus, FileDown, Wallet, Filter, TrendingUp, TrendingDown, CreditCard, Tag, DollarSign, Edit2, Trash2 } from 'lucide-react';
+import { Plus, FileDown, Wallet, Filter, TrendingUp, TrendingDown, CreditCard, Tag, DollarSign, Edit2, Trash2, ShoppingCart } from 'lucide-react';
 import { LoadingSpinner, Toast, PrintHeader, ConfirmationModal } from '../components/shared';
 import { API_URL } from '../config';
 import { formatCurrencyForExcel, formatDateForExcel } from '../utils/excelExporter';
@@ -247,9 +247,10 @@ const Finance = () => {
         ? `${formatDateForExcel(startDate)} - ${formatDateForExcel(endDate)}`
         : 'Tüm Zamanlar';
 
-      const summaryRows = [
-        ['Tarih Aralığı', dateRange],
-        ['Toplam Gelir', formatCurrencyForExcel(stats.totalSales || 0)],
+            const summaryRows = [
+                ['Tarih Aralığı', dateRange],
+                ['Toplam Satış', formatCurrencyForExcel(stats.dashboardTotalSales || 0)],
+                ['Toplam Gelir', formatCurrencyForExcel(stats.totalSales || 0)],
         ['Toplam Gider', formatCurrencyForExcel(stats.totalExpense || 0)],
         ['Açık Alacak', formatCurrencyForExcel(stats.totalOutstandingDebt || 0)],
         ['Nakit Durum', formatCurrencyForExcel(stats.currentCash || 0)],
@@ -299,7 +300,8 @@ const Finance = () => {
                 </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 mb-8">
+                <div className="bg-sky-900/20 p-5 rounded-xl border border-sky-500/30 shadow-[0_0_15px_rgba(56,189,248,0.15)] print:bg-white print:border-black print:shadow-none print:text-black"><div className="flex justify-between items-start mb-2"><span className="text-sky-100 text-sm font-extrabold uppercase tracking-wide print:text-black">Toplam Satış</span><div className="p-1.5 bg-sky-500/20 rounded-lg text-sky-300 no-print"><ShoppingCart size={18}/></div></div><div className="text-2xl font-bold text-white print:text-black">{stats.dashboardTotalSales ?? 0} ₺</div></div>
                 <div className="bg-blue-900/20 p-5 rounded-xl border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] print:bg-white print:border-black print:shadow-none print:text-black"><div className="flex justify-between items-start mb-2"><span className="text-blue-100 text-sm font-extrabold uppercase tracking-wide print:text-black">Toplam Gelir</span><div className="p-1.5 bg-blue-500/20 rounded-lg text-blue-400 no-print"><TrendingUp size={18}/></div></div><div className="text-2xl font-bold text-white print:text-black">{stats.totalSales} ₺</div><div className="text-xs text-blue-200 mt-1">(Nakit Satış + Tahsilat)</div></div>
                 <div className="bg-red-900/20 p-5 rounded-xl border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.15)] print:bg-white print:border-black print:shadow-none print:text-black"><div className="flex justify-between items-start mb-2"><span className="text-red-100 text-sm font-extrabold uppercase tracking-wide print:text-black">Toplam Gider</span><div className="p-1.5 bg-red-500/20 rounded-lg text-red-400 no-print"><TrendingDown size={18}/></div></div><div className="text-2xl font-bold text-white print:text-black">{stats.totalExpense} ₺</div></div>
                 <div className="bg-orange-900/20 p-5 rounded-xl border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.15)] print:bg-white print:border-black print:shadow-none print:text-black"><div className="flex justify-between items-start mb-2"><span className="text-orange-100 text-sm font-extrabold uppercase tracking-wide print:text-black">Açık Alacak</span><div className="p-1.5 bg-orange-500/20 rounded-lg text-orange-400 no-print"><CreditCard size={18}/></div></div><div className="text-2xl font-bold text-white print:text-black">{stats.totalOutstandingDebt} ₺</div><div className="text-xs text-orange-200 mt-1">(Kalan Borç)</div></div>

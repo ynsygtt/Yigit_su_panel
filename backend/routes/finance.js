@@ -29,9 +29,18 @@ module.exports = ({ Order, Payment, Expense, Product, BulkSale, getReportCacheKe
             if (startDate && endDate) {
                 const start = parseLocalDate(startDate);
                 const end = parseLocalDate(endDate, true);
-                bulkSalesDateFilter = { createdAt: { $gte: start, $lte: end } };
+                bulkSalesDateFilter = {
+                    $or: [
+                        { createdAt: { $gte: start, $lte: end } },
+                        { updatedAt: { $gte: start, $lte: end } }
+                    ]
+                };
             }
             const bulkSales = await BulkSale.find(bulkSalesDateFilter).lean();
+            const dashboardTotalSales = orders.reduce((sum, o) => {
+                const itemsTotal = (o.items || []).reduce((acc, item) => acc + (item.quantity * item.price), 0);
+                return sum + itemsTotal;
+            }, 0) + bulkSales.reduce((sum, bs) => sum + (bs.totalAmount || 0), 0);
 
             const {
                 totalSales,
@@ -100,6 +109,7 @@ module.exports = ({ Order, Payment, Expense, Product, BulkSale, getReportCacheKe
 
             const response = {
                 totalSales,
+                dashboardTotalSales,
                 totalExpense,
                 totalOutstandingDebt,
                 netProfit,
