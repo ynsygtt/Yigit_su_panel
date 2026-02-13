@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-02-12T23:00:00.733Z",
+  "mongoUri": "mongodb://localhost:27017/su_takip_db",
+  "collections": {
+    "products": {
+      "count": 6,
+      "data": [
+        {
+          "_id": "6985062001404c3db332c461",
+          "name": "0.5 Lt Pet Su",
+          "category": "Su",
+          "unitPrice": 34.75,
+          "salePrice": 55,
+          "stock": 1867,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "6985065501404c3db332c464",
+          "name": "1.5 Lt Pet Su",
+          "category": "Su",
+          "unitPrice": 35.25,
+          "salePrice": 55,
+          "stock": 800,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "6985067a01404c3db332c467",
+          "name": "5 Lt Pet Su",
+          "category": "Su",
+          "unitPrice": 35.75,
+          "salePrice": 55,
+          "stock": 400,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "698506b101404c3db332c46a",
+          "name": "200cc Bardak Su",
+          "category": "Su",
+          "unitPrice": 72,
+          "salePrice": 120,
+          "stock": 295,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "698506f601404c3db332c46d",
+          "name": "19 Lt Damacana Su",
+          "category": "Su",
+          "unitPrice": 38,
+          "salePrice": 120,
+          "stock": 599,
+          "unit": "Adet",
+          "__v": 0
+        },
+        {
+          "_id": "6985070d01404c3db332c470",
+          "name": "Pompa",
+          "category": "Su",
+          "unitPrice": 75,
+          "salePrice": 150,
+          "stock": 149,
+          "unit": "Adet",
+          "__v": 0
+        }
+      ]
+    },
+    "customers": {
+      "count": 0,
+      "data": []
+    },
+    "orders": {
+      "count": 0,
+      "data": []
+    },
+    "payments": {
+      "count": 0,
+      "data": []
+    },
+    "expenses": {
+      "count": 0,
+      "data": []
+    },
+    "bulkSales": {
+      "count": 0,
+      "data": []
+    }
+  }
+}
